@@ -1,167 +1,25 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
+  <style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  #kanvas {
+    background: #eee;
+  }
+  </style>
 </head>
+
 <body>
-<style>
-#kanvas {
-  background: #eee;
-}
-</style>
 
 <canvas id="kanvas" width="1000" height="563"></canvas>
 
-<script>
-// General config
-const config = {
-  fps: 60
-};
-
-// Classes
-Rectangle = function(ctx, options){
-  this.pendingTween = {};
-  this.properties = {
-    left: 100,
-    top: 100,
-    width: 100,
-    height: 100,
-  }
-  for (opt in options){
-    this.properties[opt] = options[opt];
-  }
-
-  this.render = function(){
-    ctx.rect(
-      this.properties.left,
-      this.properties.top,
-      this.properties.width,
-      this.properties.height
-    );
-  }
-
-  this.tween = function(property, target, duration){
-    let _fps = realFps;
-    if (realFps === 0) _fps = config.fps;
-    let res = [];
-    let t;
-    let frameDuration = _fps * (duration / 1000);
-    for (i=0; i<frameDuration; i++){
-      t = (target - this.properties[property]) / frameDuration;
-      res.push(t);
-    }
-    this.pendingTween[property] = res;
-  }
-}
-
-
-// Internal vars
-var live = false;
-var frames = 0;
-var realFps = 0;
-
-
-// Canvas and context
-const canvas = document.getElementById('kanvas');
-const ctx = canvas.getContext('2d');
-
-
-// Scene
-Scene = {
-  rain: [],
-  //rec: new Rectangle(ctx)
-}
-
-
-// Initializing engine
-setInterval(render, Math.ceil(1000 / config.fps));
-setInterval(tick, 1000);
-
-
-// Actions
-/*
-function goRight(){
-  Scene.rec.tween('left', 500, 500);
-  setTimeout(goLeft, 500);
-}
-function goLeft(){
-  Scene.rec.tween('left', 50, 500);
-  setTimeout(goRight, 500);
-}
-goRight();
-*/
-
-
-setTimeout(function(){
-  let drop;
-  for (i=0; i<10000; i++){
-    setTimeout(function(){
-      drop = new Rectangle(ctx, {
-        width: 20,
-        height: 20,
-        top: 0,
-        left: parseInt(Math.random() * 990)
-      });
-      Scene['rain'].push(drop);
-      drop.tween('top', 600, 1500);
-    }, 100 * i);
-  }
-}, 100);
-
-
-
-// Main render
-function render(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.beginPath();
-
-  ctx.font = '16px Arial';
-
-  ctx.fillText(realFps + ' fps', 5, 16);
-
-  for (obj in Scene){
-    let objs = [];
-    if (typeof(Scene[obj]) === 'object' && Scene[obj] instanceof Array){
-      objs = Scene[obj];
-    } else {
-      objs.push(Scene[obj]);
-    }
-    for (obj in objs){
-      objs[obj].render();
-    }
-  }
-
-  for (obj in Scene){
-
-    let objs = [];
-    if (typeof(Scene[obj]) === 'object' && Scene[obj] instanceof Array){
-      objs = Scene[obj];
-    } else {
-      objs.push(Scene[obj]);
-    }
-    for (obj in objs){
-      for (tween in objs[obj].pendingTween){
-        if (objs[obj].pendingTween[tween].length > 0){
-          let current = objs[obj].properties[tween];
-          objs[obj].properties[tween] += objs[obj].pendingTween[tween][0];
-          objs[obj].pendingTween[tween] = objs[obj].pendingTween[tween].slice(1);
-        }
-      }
-    }
-  }
-
-  ctx.stroke();
-  frames++;
-
-}
-
-
-// Tick
-function tick(){
-  realFps = frames;
-  frames = 0;
-}
-</script>
+<script src="js/kanvas.js"></script>
+<script src="js/dedosrapidos2.js"></script>
 
 </body>
 </html>
