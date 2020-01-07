@@ -1,0 +1,109 @@
+<style>
+#kanvas {
+  background: #eee;
+}
+</style>
+
+<canvas id="kanvas" width="1000" height=563"></canvas>
+
+<script>
+// General config
+const config = {
+  fps: 60
+};
+
+// Classes
+Rectangle = function(ctx){
+  this.pendingTween = {};
+  this.properties = {
+    left: 50
+  }
+
+  this.render = function(){
+    ctx.rect(this.properties.left, 50, 150, 100);
+  }
+
+  this.tween = function(property, target, duration){
+    let _fps = realFps;
+    if (realFps === 0) _fps = config.fps;
+    let res = [];
+    let t;
+    let frameDuration = _fps * (duration / 1000);
+    for (i=0; i<frameDuration; i++){
+      t = (target - this.properties[property]) / frameDuration;
+      res.push(t);
+    }
+    this.pendingTween[property] = res;
+  }
+}
+
+
+// Internal vars
+var live = false;
+var frames = 0;
+var realFps = 0;
+
+
+// Canvas and context
+const canvas = document.getElementById('kanvas');
+const ctx = canvas.getContext('2d');
+
+
+// Scene
+Scene = {
+  rec: new Rectangle(ctx)
+}
+
+
+// Initializing engine
+setInterval(render, Math.ceil(1000 / config.fps));
+setInterval(tick, 1000);
+
+
+// Actions
+function goRight(){
+  Scene.rec.tween('left', 500, 500);
+  setTimeout(goLeft, 500);
+}
+function goLeft(){
+  Scene.rec.tween('left', 50, 500);
+  setTimeout(goRight, 500);
+}
+
+goRight();
+
+
+// Main render
+function render(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+
+  ctx.font = '16px Arial';
+
+  ctx.fillText(realFps + ' fps', 5, 16);
+
+  for (obj in Scene){
+    Scene[obj].render();
+  }
+  for (obj in Scene){
+    for (tween in Scene[obj].pendingTween){
+      if (Scene[obj].pendingTween[tween].length > 0){
+        let current = Scene[obj].properties[tween];
+        Scene[obj].properties[tween] += Scene[obj].pendingTween[tween][0];
+        Scene[obj].pendingTween[tween] = Scene[obj].pendingTween[tween].slice(1);
+      }
+    }
+  }
+
+  ctx.stroke();
+  frames++;
+
+}
+
+
+// Tick
+function tick(){
+  realFps = frames;
+  frames = 0;
+}
+</script>
